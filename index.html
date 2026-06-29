@@ -1,0 +1,675 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>H-Town Matchday — Houston Trip Companion</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Anton&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@500;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --ink:#0d1f3c;--ink-2:#16294a;--paper:#f6f2e9;--paper-2:#ece5d6;
+    --rail:#d23440;--pitch:#1f7a4d;--gold:#e6a629;--line:rgba(13,31,60,.14);
+    --claude:#c8643f;--gemini:#5a73d6;--chatgpt:#11a37f;
+    --shadow:0 1px 0 var(--line), 0 8px 28px -18px rgba(13,31,60,.5);
+  }
+  *{box-sizing:border-box}
+  html{scroll-behavior:smooth}
+  body{margin:0;background:var(--paper);color:var(--ink);font-family:'Inter',system-ui,sans-serif;
+    line-height:1.5;-webkit-font-smoothing:antialiased}
+  .wrap{max-width:920px;margin:0 auto;padding:0 18px 80px}
+  header{background:var(--ink);color:var(--paper);position:relative;overflow:hidden}
+  header .hex{position:absolute;inset:0;opacity:.10;
+    background-image:radial-gradient(var(--gold) 1.4px,transparent 1.4px);background-size:22px 22px}
+  .head-inner{max-width:920px;margin:0 auto;padding:22px 18px 18px;position:relative}
+  .kicker{font-family:'JetBrains Mono',monospace;font-size:11px;letter-spacing:.22em;
+    text-transform:uppercase;color:var(--gold);margin:0 0 6px}
+  h1{font-family:'Anton',sans-serif;font-weight:400;letter-spacing:.01em;line-height:.92;margin:0;
+    font-size:clamp(38px,9vw,64px);text-transform:uppercase}
+  h1 span{color:var(--rail)}
+  .dates{font-family:'JetBrains Mono',monospace;font-size:13px;margin-top:8px;color:#cfd8ea}
+  .dates b{color:var(--paper)}
+  .ai-bar{margin-top:16px;display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+  .ai-bar .lbl{font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:.18em;
+    text-transform:uppercase;color:#aebbd4}
+  .seg{display:flex;background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.15);
+    border-radius:999px;padding:3px}
+  .seg button{border:0;background:transparent;color:#cfd8ea;font:inherit;font-size:12.5px;font-weight:600;
+    padding:6px 12px;border-radius:999px;cursor:pointer;white-space:nowrap}
+  .seg button[aria-pressed="true"]{background:var(--paper);color:var(--ink)}
+  .seg button[data-src="claude"][aria-pressed="true"]{background:var(--claude);color:#fff}
+  .seg button[data-src="gemini"][aria-pressed="true"]{background:var(--gemini);color:#fff}
+  .seg button[data-src="chatgpt"][aria-pressed="true"]{background:var(--chatgpt);color:#fff}
+  nav.tabs{position:sticky;top:0;z-index:20;background:var(--paper);border-bottom:1px solid var(--line);margin-bottom:22px}
+  .tabs-inner{max-width:920px;margin:0 auto;padding:10px 18px;display:flex;gap:8px;overflow-x:auto;scrollbar-width:none}
+  .tabs-inner::-webkit-scrollbar{display:none}
+  .tab{border:1px solid var(--line);background:#fff;color:var(--ink);font:inherit;font-weight:600;font-size:13.5px;
+    padding:8px 14px;border-radius:999px;cursor:pointer;white-space:nowrap;display:flex;align-items:center;gap:7px}
+  .tab .hx{width:9px;height:9px;background:var(--gold);clip-path:polygon(25% 0,75% 0,100% 50%,75% 100%,25% 100%,0 50%)}
+  .tab[aria-selected="true"]{background:var(--ink);color:var(--paper);border-color:var(--ink)}
+  .tab[aria-selected="true"] .hx{background:var(--rail)}
+  section[role=tabpanel]{animation:fade .25s ease}
+  @keyframes fade{from{opacity:0;transform:translateY(4px)}to{opacity:1;transform:none}}
+  .eyebrow{font-family:'JetBrains Mono',monospace;font-size:11px;letter-spacing:.18em;text-transform:uppercase;
+    color:var(--rail);margin:0 0 4px}
+  h2{font-family:'Anton',sans-serif;font-weight:400;text-transform:uppercase;letter-spacing:.01em;
+    font-size:clamp(26px,5vw,34px);margin:0 0 14px;line-height:1}
+  h3{font-size:16px;margin:0 0 6px}
+  .card{background:#fff;border:1px solid var(--line);border-radius:14px;padding:18px;margin-bottom:14px;box-shadow:var(--shadow)}
+  .card.accent{border-left:4px solid var(--gold)}
+  .card.warn{border-left:4px solid var(--rail);background:#fff6f4}
+  .card.go{border-left:4px solid var(--pitch)}
+  p{margin:0 0 10px}
+  .muted{color:#5a6885;font-size:14px}
+  ul.clean{margin:6px 0 0;padding-left:18px}
+  ul.clean li{margin-bottom:7px}
+  .pill{display:inline-block;font-family:'JetBrains Mono',monospace;font-size:11px;background:var(--paper-2);
+    color:var(--ink);padding:3px 8px;border-radius:6px;margin:2px 4px 2px 0}
+  a.maps{display:inline-flex;align-items:center;gap:5px;font-weight:600;font-size:13px;color:var(--rail);text-decoration:none}
+  a.maps:hover{text-decoration:underline}
+  a.btn{display:inline-block;background:var(--ink);color:var(--paper);text-decoration:none;font-weight:600;
+    font-size:13.5px;padding:9px 15px;border-radius:9px;margin:4px 6px 4px 0}
+  a.btn.alt{background:var(--rail)}
+  a.btn.green{background:var(--pitch)}
+  .board{font-family:'JetBrains Mono',monospace}
+  .leg{display:grid;grid-template-columns:64px 1fr;gap:14px;padding:11px 0;border-top:1px dashed var(--line)}
+  .leg:first-child{border-top:0}
+  .leg .t{font-weight:700;font-size:14px;color:var(--rail)}
+  .leg .what{font-family:'Inter',sans-serif}
+  .leg .what b{font-size:14.5px}
+  .leg .what .sub{font-size:12.5px;color:#5a6885;margin-top:2px}
+  .daytag{font-family:'Anton',sans-serif;font-size:20px;text-transform:uppercase;color:var(--ink);margin:18px 0 2px;letter-spacing:.02em}
+  .meter{height:14px;border-radius:999px;background:var(--paper-2);overflow:hidden;margin:8px 0}
+  .meter>span{display:block;height:100%;background:linear-gradient(90deg,var(--pitch),var(--gold))}
+  .scale{display:flex;justify-content:space-between;font-family:'JetBrains Mono',monospace;font-size:11px;color:#5a6885}
+  .ai-grid{display:grid;gap:12px}
+  .ai-panel{border:1px solid var(--line);border-radius:12px;padding:14px;background:#fff}
+  .ai-panel[data-src=claude]{border-top:4px solid var(--claude)}
+  .ai-panel[data-src=gemini]{border-top:4px solid var(--gemini)}
+  .ai-panel[data-src=chatgpt]{border-top:4px solid var(--chatgpt)}
+  .ai-tag{font-family:'JetBrains Mono',monospace;font-size:10.5px;letter-spacing:.14em;text-transform:uppercase;
+    font-weight:700;display:inline-flex;align-items:center;gap:6px;margin-bottom:8px}
+  .ai-tag .dot{width:9px;height:9px;border-radius:50%}
+  [data-src=claude] .dot{background:var(--claude)}
+  [data-src=gemini] .dot{background:var(--gemini)}
+  [data-src=chatgpt] .dot{background:var(--chatgpt)}
+  .ai-panel textarea{width:100%;min-height:84px;border:1px dashed var(--line);border-radius:8px;padding:10px;
+    font:inherit;font-size:13.5px;resize:vertical;background:var(--paper)}
+  .ai-panel textarea:focus{outline:2px solid var(--gemini);border-style:solid}
+  .topic-h{font-family:'Anton',sans-serif;text-transform:uppercase;font-size:18px;margin:20px 0 8px;letter-spacing:.02em}
+  body[data-filter=claude] .ai-panel:not([data-src=claude]),
+  body[data-filter=gemini] .ai-panel:not([data-src=gemini]),
+  body[data-filter=chatgpt] .ai-panel:not([data-src=chatgpt]){display:none}
+  .pack-group{margin-bottom:14px}
+  .pack-group h3{margin-bottom:8px}
+  label.chk{display:flex;align-items:flex-start;gap:10px;padding:7px 0;cursor:pointer;border-top:1px solid var(--line);font-size:14.5px}
+  label.chk:first-of-type{border-top:0}
+  label.chk input{margin-top:3px;width:17px;height:17px;accent-color:var(--pitch);flex:0 0 auto}
+  label.chk input:checked + span{text-decoration:line-through;color:#94a0b8}
+  details{border:1px solid var(--line);border-radius:11px;padding:2px 14px;margin-bottom:10px;background:#fff}
+  details summary{cursor:pointer;font-weight:600;padding:12px 0;list-style:none}
+  details summary::-webkit-details-marker{display:none}
+  details summary::before{content:"+ ";color:var(--rail);font-family:'JetBrains Mono',monospace}
+  details[open] summary::before{content:"– "}
+  details p{padding-bottom:8px}
+  /* weather */
+  .wx{display:flex;gap:10px;overflow-x:auto;scrollbar-width:none}
+  .wx::-webkit-scrollbar{display:none}
+  .wx-day{flex:0 0 auto;min-width:92px;text-align:center;border:1px solid var(--line);border-radius:12px;padding:12px 10px;background:var(--paper)}
+  .wx-day .d{font-family:'JetBrains Mono',monospace;font-size:11px;color:#5a6885;text-transform:uppercase}
+  .wx-day .ic{font-size:26px;line-height:1.3}
+  .wx-day .hi{font-weight:700;font-size:17px}
+  .wx-day .lo{font-size:12.5px;color:#5a6885}
+  .wx-day .pp{font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--gemini);margin-top:3px}
+  /* maps */
+  .mapbox{border:1px solid var(--line);border-radius:12px;overflow:hidden;margin-top:10px;line-height:0}
+  .mapbox iframe{width:100%;height:200px;border:0;display:block}
+  /* budget */
+  .bud-row{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:9px 0;border-top:1px solid var(--line)}
+  .bud-row:first-of-type{border-top:0}
+  .bud-row label{font-size:14.5px}
+  .bud-row .amt{display:flex;align-items:center;gap:4px;font-family:'JetBrains Mono',monospace}
+  .bud-row .amt span{color:#5a6885}
+  .bud-row input{width:92px;text-align:right;font:inherit;font-family:'JetBrains Mono',monospace;font-size:14px;
+    border:1px solid var(--line);border-radius:7px;padding:6px 8px;background:var(--paper)}
+  .bud-row input:focus{outline:2px solid var(--pitch);border-color:var(--pitch)}
+  .bud-total{display:flex;align-items:center;justify-content:space-between;margin-top:12px;padding-top:12px;
+    border-top:2px solid var(--ink);font-family:'Anton',sans-serif;text-transform:uppercase;font-size:20px}
+  .bud-total .num{color:var(--pitch)}
+  footer{text-align:center;color:#7c89a3;font-size:12px;margin-top:30px}
+  .save-note{font-family:'JetBrains Mono',monospace;font-size:10.5px;color:#8a96b0;margin-top:6px}
+  :focus-visible{outline:2.5px solid var(--gold);outline-offset:2px;border-radius:6px}
+  @media (prefers-reduced-motion:reduce){*{animation:none!important}}
+</style>
+</head>
+<body data-filter="all">
+<header>
+  <div class="hex"></div>
+  <div class="head-inner">
+    <p class="kicker">Houston · FIFA World Cup 26™ road trip</p>
+    <h1>H-Town <span>Matchday</span></h1>
+    <p class="dates"><b>FRI JUL 3 → MON JUL 6, 2026</b> · 3 travelers · AC Hotel Houston Downtown</p>
+    <div class="ai-bar">
+      <span class="lbl">AI source</span>
+      <div class="seg" role="group" aria-label="Filter recommendations by AI">
+        <button data-src="all" aria-pressed="true">All</button>
+        <button data-src="claude" aria-pressed="false">Claude</button>
+        <button data-src="gemini" aria-pressed="false">Gemini</button>
+        <button data-src="chatgpt" aria-pressed="false">ChatGPT</button>
+      </div>
+    </div>
+  </div>
+</header>
+
+<nav class="tabs">
+  <div class="tabs-inner" role="tablist" aria-label="Sections">
+    <button class="tab" role="tab" aria-selected="true" data-tab="trip"><span class="hx"></span>Trip</button>
+    <button class="tab" role="tab" aria-selected="false" data-tab="roadtrip"><span class="hx"></span>Road Trip</button>
+    <button class="tab" role="tab" aria-selected="false" data-tab="wc"><span class="hx"></span>World Cup</button>
+    <button class="tab" role="tab" aria-selected="false" data-tab="astros"><span class="hx"></span>Astros</button>
+    <button class="tab" role="tab" aria-selected="false" data-tab="space"><span class="hx"></span>Space Center</button>
+    <button class="tab" role="tab" aria-selected="false" data-tab="do"><span class="hx"></span>Do &amp; Eat</button>
+    <button class="tab" role="tab" aria-selected="false" data-tab="go"><span class="hx"></span>Getting Around</button>
+    <button class="tab" role="tab" aria-selected="false" data-tab="budget"><span class="hx"></span>Budget</button>
+    <button class="tab" role="tab" aria-selected="false" data-tab="pack"><span class="hx"></span>Pack &amp; Photos</button>
+    <button class="tab" role="tab" aria-selected="false" data-tab="ai"><span class="hx"></span>AI Picks</button>
+    <button class="tab" role="tab" aria-selected="false" data-tab="faq"><span class="hx"></span>FAQ</button>
+  </div>
+</nav>
+
+<div class="wrap">
+
+<!-- TRIP -->
+<section role="tabpanel" data-panel="trip">
+  <p class="eyebrow">The weekend at a glance</p>
+  <h2>Four days, one car, mostly on rail</h2>
+
+  <div class="card">
+    <h3>Houston forecast</h3>
+    <div class="wx" id="wx"><p class="muted" id="wxMsg">Loading live weather…</p></div>
+    <p class="save-note" id="wxNote"></p>
+  </div>
+
+  <div class="card accent">
+    <p>You're driving ~350 mi / ~5.5 hrs from Metairie on <b>I-10 West</b> (no time-zone change — both Central). Leave 6:00 AM Fri → arrive Houston ~12:30–1:30 PM, a comfortable cushion before the Astros' 7:10 PM first pitch.</p>
+    <p class="muted">Smart move you already made: park the car at the hotel and ride the rail. Your hotel sits on Main Street downtown, and the ballpark is a short walk away — so you may barely touch the car until Sunday's Space Center run.</p>
+    <div class="mapbox"><iframe loading="lazy" title="AC Hotel Houston Downtown map" src="https://maps.google.com/maps?q=AC%20Hotel%20Houston%20Downtown%20723%20Main%20St&z=15&output=embed"></iframe></div>
+    <a class="maps" href="https://waze.com/ul?q=AC%20Hotel%20Houston%20Downtown%20723%20Main%20St" target="_blank" rel="noopener">▸ Navigate in Waze</a>
+  </div>
+
+  <p class="daytag">Fri · Jul 3</p>
+  <div class="card board">
+    <div class="leg"><div class="t">6:00a</div><div class="what"><b>Depart Metairie</b><div class="sub">Mom’s place → I-10 W. Watch GPS for slowdowns near Baton Rouge &amp; Lake Charles.</div></div></div>
+    <div class="leg"><div class="t">~1:00p</div><div class="what"><b>Check in / drop bags — AC Hotel Houston Downtown</b><div class="sub">723 Main St. Check-in ~3 PM; ask to store bags or for early check-in via the Bonvoy app.</div></div></div>
+    <div class="leg"><div class="t">~5:10p</div><div class="what"><b>Daikin Park — gates open</b><div class="sub">Be here at gate-open for the jersey + First Bud. Walk or quick rail hop from the hotel.</div></div></div>
+    <div class="leg"><div class="t">7:10p</div><div class="what"><b>Astros vs. Rays — first pitch</b><div class="sub">Friday Night Fireworks (Summer Vibes) postgame.</div></div></div>
+  </div>
+
+  <p class="daytag">Sat · Jul 4</p>
+  <div class="card board">
+    <div class="leg"><div class="t">10:30a</div><div class="what"><b>Head to Houston Stadium (NRG)</b><div class="sub">Red Line south from downtown. (Plan B: Fan Festival in EaDo.)</div></div></div>
+    <div class="leg"><div class="t">12:00p</div><div class="what"><b>World Cup — Round of 16</b><div class="sub">Roof closed + AC. Ends ~2 PM.</div></div></div>
+    <div class="leg"><div class="t">eve</div><div class="what"><b>July 4th — fireworks &amp; food</b><div class="sub">Downtown / Buffalo Bayou shows. Rail beats the rideshare surge.</div></div></div>
+  </div>
+
+  <p class="daytag">Sun · Jul 5</p>
+  <div class="card board">
+    <div class="leg"><div class="t">8:45a</div><div class="what"><b>Drive to Space Center Houston</b><div class="sub">~30–40 min south on I-45. The day you need the car (no rail out there).</div></div></div>
+    <div class="leg"><div class="t">9:00a</div><div class="what"><b>Space Center — opens (weekends 9 AM)</b><div class="sub">Allow 4–6 hrs. Book a tram time at Guest Services on arrival.</div></div></div>
+    <div class="leg"><div class="t">eve</div><div class="what"><b>Optional: Kemah Boardwalk</b><div class="sub">15 min away — waterfront dinner before heading back.</div></div></div>
+  </div>
+
+  <p class="daytag">Mon · Jul 6</p>
+  <div class="card board">
+    <div class="leg"><div class="t">AM</div><div class="what"><b>Checkout + drive home</b><div class="sub">Beat the afternoon heat/traffic; ~5.5 hrs to Metairie.</div></div></div>
+  </div>
+</section>
+
+<!-- ROAD TRIP -->
+<section role="tabpanel" data-panel="roadtrip" hidden>
+  <p class="eyebrow">Metairie → Houston · I-10 West</p>
+  <h2>The Drive</h2>
+  <div class="card accent">
+    <p>~350 mi, ~5.5 hrs without stops. Leaving 6 AM Friday puts you in Houston early afternoon — but July 3 holiday traffic can add an hour, so build in cushion.</p>
+    <p class="muted">Both ends are Central time, so no clock change. Fuel up before you leave; the long stretches west of Baton Rouge have sparse options.</p>
+  </div>
+
+  <div class="card go">
+    <h3>The Buc-ee's stop</h3>
+    <p>Louisiana's own I-10 Buc-ee's (Lafayette) isn't open yet, so the reliable one is <b>Baytown, TX</b> — 60,000+ sq ft, ~100 covered pumps, right on I-10 about <b>30 minutes east of downtown Houston</b>. Perfect as your last fuel + restroom + lunch (and Beaver Nuggets) stop before you arrive.</p>
+    <div class="mapbox"><iframe loading="lazy" title="Buc-ee's Baytown map" src="https://maps.google.com/maps?q=Buc-ee's%20Baytown%20TX%20I-10&z=13&output=embed"></iframe></div>
+    <a class="maps" href="https://waze.com/ul?q=Buc-ee's%20Baytown%20TX" target="_blank" rel="noopener">▸ Navigate in Waze</a>
+  </div>
+
+  <div class="card warn">
+    <h3>Watch these I-10 chokepoints</h3>
+    <ul class="clean">
+      <li><b>Baton Rouge (I-10/I-12 split):</b> chronic congestion — often the worst delay of the trip. Check live nav before you hit it.</li>
+      <li><b>Atchafalaya Basin Bridge:</b> 18 miles of narrow, shoulderless elevated bridge — one wreck backs it up fast. No exits to bail.</li>
+      <li><b>Lake Charles (Calcasieu River bridge):</b> ongoing bridge work and bottlenecks.</li>
+    </ul>
+    <p class="muted" style="margin-top:8px">Open Waze before departure and re-check around Baton Rouge; it'll route you around incidents in real time.</p>
+  </div>
+
+  <div class="card">
+    <h3>Departure &amp; arrival checklist</h3>
+    <div class="pack-group" id="roadCard">
+      <label class="chk"><input type="checkbox" data-k="r1"><span>Gas tank full before leaving Metairie</span></label>
+      <label class="chk"><input type="checkbox" data-k="r2"><span>Waze set to AC Hotel Houston Downtown</span></label>
+      <label class="chk"><input type="checkbox" data-k="r3"><span>Phone chargers + cable in the car</span></label>
+      <label class="chk"><input type="checkbox" data-k="r4"><span>Water + snacks within reach (heat)</span></label>
+      <label class="chk"><input type="checkbox" data-k="r5"><span>Hotel conf # + tickets downloaded offline</span></label>
+      <label class="chk"><input type="checkbox" data-k="r6"><span>Confirm hotel parking rate at check-in</span></label>
+      <label class="chk"><input type="checkbox" data-k="r7"><span>Note where you parked (photo of level/space)</span></label>
+    </div>
+  </div>
+</section>
+
+<!-- WORLD CUP -->
+<section role="tabpanel" data-panel="wc" hidden>
+  <p class="eyebrow">The main event</p>
+  <h2>Round of 16 · Sat Jul 4 · noon</h2>
+  <div class="card accent">
+    <h3>Match 90 — Houston Stadium (NRG), 1 NRG Pkwy</h3>
+    <p class="muted">A Round of 16 knockout on Independence Day — one of the most atmospheric fixtures of the tournament. Teams lock in as the bracket resolves; it's lined up as a Canada/South-Africa-side team vs. a Netherlands/Morocco-side team. Kickoff <b>12:00 PM CT</b>, retractable roof + full A/C.</p>
+    <span class="pill">Roof closed</span><span class="pill">Air conditioned</span><span class="pill">Clear-bag policy</span><span class="pill">Cashless</span>
+    <div class="mapbox"><iframe loading="lazy" title="NRG Stadium map" src="https://maps.google.com/maps?q=NRG%20Stadium%201%20NRG%20Pkwy%20Houston&z=14&output=embed"></iframe></div>
+    <a class="maps" href="https://waze.com/ul?q=NRG%20Stadium%201%20NRG%20Pkwy%20Houston" target="_blank" rel="noopener">▸ Navigate in Waze</a>
+  </div>
+
+  <div class="card warn">
+    <h3>Reality check: this match is likely over budget</h3>
+    <p class="muted">Your cap is <b>$700/person</b>. But Match 90's live get-in price has climbed well past that: TickPick starts around <b>$1,329</b>, SeatGeek listings sit in the <b>$2,300+</b> range, and even back in late May the cheapest were <b>~$740 (Vivid) / $776 (SeatGeek) / $1,035 (FIFA official)</b> — all at or above budget. Three together under $700 each is a long shot.</p>
+    <div class="meter"><span style="width:100%;background:var(--rail)"></span></div>
+    <div class="scale"><span>$700 cap</span><span>actual floor ≈ $1,300+ now</span></div>
+    <p class="muted" style="margin-top:10px"><b>The honest call:</b> plan on the Fan Festival below. Keep a SeatGeek alert running only as a long shot — knockout prices sometimes soften in the final days if the matchup is lopsided.</p>
+  </div>
+
+  <div class="card warn">
+    <h3>⚠ Buy on FIFA's official resale — not third-party</h3>
+    <p>The most important thing on this page. As of late June, fans reported StubHub / SeatGeek / Vivid resale tickets <b>failing to deliver</b>; FIFA says it only guarantees tickets bought through its own platform and may <b>void third-party tickets at the gate</b>. Buy via <b>FIFA.com/tickets</b> — the ticket is deactivated from the seller and reissued to your FIFA ID.</p>
+    <a class="btn alt" href="https://www.fifa.com/en/tournaments/mens/worldcup/canadamexicousa2026/tickets" target="_blank" rel="noopener">Open FIFA Tickets</a>
+  </div>
+
+  <div class="card go">
+    <h3>Long-shot ticket watch (only if you want to try)</h3>
+    <div class="pack-group" id="ticketCard">
+      <label class="chk"><input type="checkbox" data-k="t1"><span><b>Create your FIFA ID</b> at FIFA.com/tickets so you can move fast if a price drops.</span></label>
+      <label class="chk"><input type="checkbox" data-k="t2"><span><b>Set a SeatGeek price alert</b> for Match 90 with your target ($700) — you'll get pinged if it ever dips there.</span></label>
+      <label class="chk"><input type="checkbox" data-k="t3"><span><b>Watch the floor</b> on a tracker (ticketdata.com) over the final few days.</span></label>
+      <label class="chk"><input type="checkbox" data-k="t4"><span><b>If — and only if — it lands at/under budget,</b> buy on FIFA official (not third-party), sorting "most seats together" for 3 adjacent.</span></label>
+      <label class="chk"><input type="checkbox" data-k="t5"><span><b>Otherwise, commit to the Fan Festival.</b> It's a great day, not a consolation prize.</span></label>
+    </div>
+    <a class="btn" href="https://seatgeek.com/fifa-world-cup-tickets/houston" target="_blank" rel="noopener">SeatGeek alerts</a>
+    <a class="btn" href="https://www.ticketdata.com/performer/world-cup-soccer" target="_blank" rel="noopener">Floor tracker</a>
+  </div>
+
+  <div class="card go">
+    <h3>Your plan: FIFA Fan Festival (free, no ticket)</h3>
+    <p>Not a backup — a genuinely great day: every match on giant screens, ~20 food vendors, a playable pitch, an air-conditioned 360° dome (Esphera), plus misting, shade and water.</p>
+    <p class="muted"><b>2301 Dallas St, EaDo</b>, by Shell Energy Stadium. Sat Jul 4 hours <b>10:30 AM–6 PM</b>. Green or Purple Line → EaDo/Stadium Station, ~5-min walk.</p>
+    <p class="muted"><b>Heat caution for the group:</b> there have already been heat-related hospitalizations at this Fan Fest this summer. For your mom and aunt, beeline to the air-conditioned dome/pavilions, hydrate constantly, and consider the paid indoor hospitality option Gemini flagged (~$95 VIP with guaranteed indoor seating) if you want guaranteed AC and seating.</p>
+    <div class="mapbox"><iframe loading="lazy" title="FIFA Fan Festival map" src="https://maps.google.com/maps?q=FIFA%20Fan%20Festival%202301%20Dallas%20St%20Houston&z=15&output=embed"></iframe></div>
+    <a class="maps" href="https://waze.com/ul?q=FIFA%20Fan%20Festival%202301%20Dallas%20St%20Houston" target="_blank" rel="noopener">▸ Navigate in Waze</a>
+  </div>
+
+  <div class="card accent">
+    <h3>🎆 July 4th fireworks — after the Fan Fest closes (6 PM)</h3>
+    <p class="muted">Houston's big show is <b>Freedom Over Texas</b> (39th year, America's 250th) at Eleanor Tinsley &amp; Sam Houston Parks on Buffalo Bayou, just west of downtown. Festival runs 3–10 PM; the <b>fireworks finale is ~9:30 PM</b>. My picks for your group, easiest first:</p>
+    <ul class="clean">
+      <li><b>Free viewing along Buffalo Bayou / Allen Parkway / Memorial Dr</b> — the show is choreographed in the sky west of downtown, viewable for free from the bayou trail bridges, the park hillside, and elevated downtown parking decks. A short walk or quick ride from your hotel; skip the $10–15 ticket and the crowd.</li>
+      <li><b>POST Houston Skylawn</b> — a 5-acre downtown rooftop park with skyline + fireworks views (free, but reserve a spot in advance). Elevated and breezier than ground level.</li>
+      <li><b>Miller Outdoor Theatre (Hermann Park)</b> — the most relaxed option: free Houston Symphony "Star-Spangled Salute" at 8:30 PM with a fireworks finale ~10 PM, hillside seating, on the Red Line. Lovely and lower-stress for your mom and aunt. Download the Pyrocast app for synced audio.</li>
+    </ul>
+    <p class="muted"><b>Heat + crowd note:</b> it's a Saturday, so traffic and parking fill early — arrive 60–90 min ahead, hydrate, and lean on the Red Line over driving.</p>
+    <a class="maps" href="https://waze.com/ul?q=Eleanor%20Tinsley%20Park%20Houston" target="_blank" rel="noopener">▸ Eleanor Tinsley Park in Waze</a>
+  </div>
+</section>
+
+<!-- ASTROS -->
+<section role="tabpanel" data-panel="astros" hidden>
+  <p class="eyebrow">Friday night</p>
+  <h2>Astros vs. Rays · Jul 3</h2>
+  <div class="card accent">
+    <h3>Quick corrections to your notes</h3>
+    <ul class="clean">
+      <li><b>First pitch 7:10 PM</b> (not 7:15) at <b>Daikin Park</b> — the former Minute Maid Park, renamed 2025. 501 Crawford St.</li>
+      <li>The free jersey is the <b>Josh Hader Patriotic Jersey</b> (first 10,000, presented by Oxy) — <b>one size, Adult XL</b>. (Heads up: Gemini called it a "Hunter Brown" jersey — that's the July 5 bobblehead, different day.)</li>
+    </ul>
+  </div>
+
+  <div class="card">
+    <h3>Bag the jersey AND the First Bud</h3>
+    <ul class="clean">
+      <li><b>Gates open 5:10 PM</b> (2 hrs before first pitch). Be in line at open — jersey is "while supplies last," first 10,000.</li>
+      <li><b>Grab the jersey on entry</b>, before leaving the distribution area.</li>
+      <li><b>Then the Michelob Ultra Club</b> — confirmed location: <b>Upper Deck, Right Field corner (300 level)</b>, a 360° public bar with skyline views (staircase up from the Silverado Mezzanine; Killen's BBQ is right there). First Bud Friday runs <b>5–7 PM</b>, $5 Budweiser drafts + live DJ.</li>
+    </ul>
+  </div>
+
+  <div class="card go">
+    <h3>From your seats — Section 236</h3>
+    <p>You're on the <b>Honda Club Level (200 tier), right-field / first-base corner</b> — the same side as the Michelob Ultra Club, so the pregame is an easy hop. The play:</p>
+    <ul class="clean">
+      <li><b>Don't go to 236 first.</b> At gate-open (~5:10), grab your jersey at entry, then head straight along the right-field side and <b>up to the upper-deck right-field corner</b> where the Ultra Club sits (staircase up from the mezzanine — any usher will point you). First Bud runs 5–7, so beat the cutoff.</li>
+      <li><b>Then drop down to Section 236</b> for first pitch — you're already on the right side of the park, so it's a short move down a level.</li>
+      <li><b>Check your ticket for a $15 voucher</b> — sections 233–236 sometimes include food/drink/merch credit. If yours has it, it covers the First Bud and then some.</li>
+    </ul>
+    <p class="muted">Heads up: the right-field corner is the sunny side, but for a 7:10 July game the roof is almost certainly closed and the A/C on, so it won't matter.</p>
+  </div>
+    <span class="pill">$17.76 tickets — upper value, rows 11+</span>
+    <span class="pill">$2.50 hot dogs</span>
+    <span class="pill">Fri postgame fireworks</span>
+    <p class="muted" style="margin-top:8px">Note: Daikin Park is <b>cashless</b> and uses the same clear-bag screening as the stadium. Tickets must be live in the MLB Ballpark app — screenshots won't scan.</p>
+    <div class="mapbox"><iframe loading="lazy" title="Daikin Park map" src="https://maps.google.com/maps?q=Daikin%20Park%20501%20Crawford%20St%20Houston&z=15&output=embed"></iframe></div>
+    <a class="maps" href="https://waze.com/ul?q=Daikin%20Park%20501%20Crawford%20St%20Houston" target="_blank" rel="noopener">▸ Navigate in Waze</a>
+  </div>
+</section>
+
+<!-- SPACE CENTER -->
+<section role="tabpanel" data-panel="space" hidden>
+  <p class="eyebrow">Sunday · your car day</p>
+  <h2>Space Center Houston</h2>
+  <div class="card accent">
+    <p>NASA Johnson's official visitor center — Saturn V, Mission Control, Independence Plaza (shuttle on a 747), moon rocks, and the behind-the-scenes <b>NASA Tram Tour</b> onto the working campus. Plan Sunday Jul 5.</p>
+    <span class="pill">1601 E NASA Pkwy</span><span class="pill">~30–40 min south on I-45</span><span class="pill">No rail — drive or rideshare $40–60/way</span>
+  </div>
+  <div class="card">
+    <h3>Plan the visit</h3>
+    <ul class="clean">
+      <li><b>Buy online</b> (~$29.95 adult, ~$27.95 senior) — saves ~$5 vs. the gate, and weekends can sell out.</li>
+      <li><b>Weekend hours 9 AM–6 PM.</b> Arrive near open; allow 4–6 hours.</li>
+      <li><b>Reserve a tram time at Guest Services on arrival</b> — they go fast. Saturn V / Rocket Park is the must.</li>
+      <li><b>Parking $10.</b> Re-entry allowed with a hand stamp.</li>
+    </ul>
+    <a class="btn green" href="https://spacecenter.org/" target="_blank" rel="noopener">Tickets &amp; hours</a>
+    <div class="mapbox"><iframe loading="lazy" title="Space Center Houston map" src="https://maps.google.com/maps?q=Space%20Center%20Houston%201601%20E%20NASA%20Pkwy&z=14&output=embed"></iframe></div>
+    <a class="maps" href="https://waze.com/ul?q=Space%20Center%20Houston%201601%20E%20NASA%20Pkwy" target="_blank" rel="noopener">▸ Navigate in Waze</a>
+  </div>
+  <div class="card go">
+    <h3>Pair it with Kemah Boardwalk</h3>
+    <p class="muted">15 minutes away — waterfront seafood, a Ferris wheel, easy sunset stroll to cap a museum-heavy day.</p>
+  </div>
+</section>
+
+<!-- DO & EAT -->
+<section role="tabpanel" data-panel="do" hidden>
+  <p class="eyebrow">When you're not at a match</p>
+  <h2>Do &amp; Eat</h2>
+  <div class="card">
+    <h3>Walkable / near downtown</h3>
+    <ul class="clean">
+      <li><b>Buffalo Bayou Park</b> — paths, kayaks, the bat colony at dusk under Waugh Bridge, skyline views.</li>
+      <li><b>Discovery Green</b> — downtown park, often programmed during the Cup.</li>
+      <li><b>POST Houston</b> — rooftop park + food hall in a converted post office.</li>
+    </ul>
+  </div>
+  <div class="card">
+    <h3>Museum District (Red Line)</h3>
+    <ul class="clean">
+      <li><b>Houston Museum of Natural Science</b> — great for a hot afternoon.</li>
+      <li><b>Museum of Fine Arts Houston (MFAH)</b> + Hermann Park / zoo nearby.</li>
+    </ul>
+  </div>
+  <div class="card accent">
+    <h3>Eat</h3>
+    <p class="muted">Houston's food is its quiet superpower — Tex-Mex, Viet-Cajun crawfish, serious BBQ, and a deep sushi bench. Gemini already pulled a sushi-forward list tuned to simple rolls — see the <b>AI Picks → Where to eat</b> tab to compare it against ChatGPT's.</p>
+    <span class="pill">Tex-Mex</span><span class="pill">Viet-Cajun</span><span class="pill">Texas BBQ</span><span class="pill">Sushi</span>
+  </div>
+</section>
+
+<!-- GETTING AROUND -->
+<section role="tabpanel" data-panel="go" hidden>
+  <p class="eyebrow">Park once, ride the rail</p>
+  <h2>Getting Around</h2>
+  <div class="card go">
+    <h3>The rail cheat-sheet (METRORail)</h3>
+    <ul class="clean">
+      <li><b>Red Line</b> runs through downtown (Main Street Square, steps from your hotel) straight to <b>Stadium Park/Astrodome</b> by NRG — your World Cup line. ~Every 5 min with two-car trains during the Cup.</li>
+      <li><b>Green or Purple Line</b> → <b>EaDo/Stadium Station</b> for the Fan Festival.</li>
+      <li><b>Fares:</b> ~$1.25/ride, ~$3 day pass via the <b>METRO Q</b> app, a Q Card, or tap. Grab the discounted senior fare for your mom and aunt.</li>
+    </ul>
+  </div>
+  <div class="card">
+    <h3>Driving &amp; parking</h3>
+    <ul class="clean">
+      <li><b>Hotel parking is paid</b> (downtown valet ~$30–45/night) — confirm at check-in.</li>
+      <li><b>Don't drive to NRG on match day</b> — roads are restricted and lots need pre-purchase. Take the Red Line.</li>
+      <li><b>Daikin Park is walkable</b> (~0.5 mi) — Friday you likely don't need car or rail.</li>
+      <li><b>Space Center is the exception</b> — drive or rideshare; no rail link.</li>
+    </ul>
+  </div>
+  <div class="card accent">
+    <h3>Rideshare &amp; wayfinding</h3>
+    <p class="muted">Uber/Lyft work everywhere with dedicated lots at NRG and the Fan Fest. Expect <b>surge</b> after the noon match and on July 4th evening — rail dodges it. Downtown, follow the blue hexagon ground markings and purple "Via Fútbol" signs to the stadium, Fan Fest and rail.</p>
+  </div>
+</section>
+
+<!-- BUDGET -->
+<section role="tabpanel" data-panel="budget" hidden>
+  <p class="eyebrow">Edit any number — total updates live &amp; saves</p>
+  <h2>Budget Tracker</h2>
+  <div class="card">
+    <p class="muted" style="margin-bottom:6px">Starting estimates for three people. Tap a field to set your real numbers.</p>
+    <div id="budCard">
+      <div class="bud-row"><label>Hotel (3 nights)</label><div class="amt"><span>$</span><input type="number" data-k="b1" value="540"></div></div>
+      <div class="bud-row"><label>Gas (round trip)</label><div class="amt"><span>$</span><input type="number" data-k="b2" value="90"></div></div>
+      <div class="bud-row"><label>Hotel parking (3 nights)</label><div class="amt"><span>$</span><input type="number" data-k="b3" value="120"></div></div>
+      <div class="bud-row"><label>Food &amp; drinks</label><div class="amt"><span>$</span><input type="number" data-k="b4" value="400"></div></div>
+      <div class="bud-row"><label>Astros tickets (3)</label><div class="amt"><span>$</span><input type="number" data-k="b5" value="55"></div></div>
+      <div class="bud-row"><label>World Cup / Fan Fest</label><div class="amt"><span>$</span><input type="number" data-k="b6" value="0"></div></div>
+      <div class="bud-row"><label>Space Center (3 + parking)</label><div class="amt"><span>$</span><input type="number" data-k="b7" value="100"></div></div>
+      <div class="bud-row"><label>Souvenirs</label><div class="amt"><span>$</span><input type="number" data-k="b8" value="100"></div></div>
+      <div class="bud-row"><label>Emergency buffer</label><div class="amt"><span>$</span><input type="number" data-k="b9" value="200"></div></div>
+      <div class="bud-total"><span>Total</span><span class="num" id="budTotal">$0</span></div>
+    </div>
+    <p class="save-note">Fan Fest is free; if you grab the ~$95 VIP indoor option for all three, that line becomes ~$285. If the match price ever drops to budget, it's $700 × 3.</p>
+  </div>
+</section>
+
+<!-- PACKING -->
+<section role="tabpanel" data-panel="pack" hidden>
+  <p class="eyebrow">Tap to check off — saves automatically</p>
+  <h2>Packing List</h2>
+  <div class="card" id="packCard">
+    <div class="pack-group">
+      <h3>Tickets &amp; docs</h3>
+      <label class="chk"><input type="checkbox" data-k="p1"><span>Driver's license / ID (stadium entry)</span></label>
+      <label class="chk"><input type="checkbox" data-k="p2"><span>Hotel confirmation # saved offline</span></label>
+      <label class="chk"><input type="checkbox" data-k="p3"><span>World Cup tickets in FIFA app wallet</span></label>
+      <label class="chk"><input type="checkbox" data-k="p4"><span>Astros tickets in MLB Ballpark app</span></label>
+      <label class="chk"><input type="checkbox" data-k="p5"><span>Space Center tickets (QR on phone)</span></label>
+    </div>
+    <div class="pack-group">
+      <h3>Apps to download before you go</h3>
+      <label class="chk"><input type="checkbox" data-k="a1"><span>FIFA (tickets + wallet)</span></label>
+      <label class="chk"><input type="checkbox" data-k="a2"><span>MLB Ballpark (seat + in-park map)</span></label>
+      <label class="chk"><input type="checkbox" data-k="a3"><span>METRO Q (transit fares)</span></label>
+      <label class="chk"><input type="checkbox" data-k="a4"><span>Uber / Lyft</span></label>
+      <label class="chk"><input type="checkbox" data-k="a5"><span>Marriott Bonvoy (mobile key / early check-in)</span></label>
+    </div>
+    <div class="pack-group">
+      <h3>Houston-in-July gear</h3>
+      <label class="chk"><input type="checkbox" data-k="h1"><span>Clear bag (stadium clear-bag policy)</span></label>
+      <label class="chk"><input type="checkbox" data-k="h2"><span>Refillable water bottle (empty through security)</span></label>
+      <label class="chk"><input type="checkbox" data-k="h3"><span>Sunscreen + hat + sunglasses</span></label>
+      <label class="chk"><input type="checkbox" data-k="h4"><span>Light layer — venues are aggressively air-conditioned</span></label>
+      <label class="chk"><input type="checkbox" data-k="h5"><span>Comfortable walking shoes</span></label>
+      <label class="chk"><input type="checkbox" data-k="h6"><span>Portable phone charger</span></label>
+      <label class="chk"><input type="checkbox" data-k="h9"><span>Cooling towel + electrolyte packets (real heat-illness risk this summer)</span></label>
+      <label class="chk"><input type="checkbox" data-k="h7"><span>Small umbrella / poncho (afternoon storms)</span></label>
+      <label class="chk"><input type="checkbox" data-k="h8"><span>Meds + any mobility aids for mom &amp; aunt</span></label>
+    </div>
+    <div class="pack-group">
+      <h3>📷 Photo checklist</h3>
+      <label class="chk"><input type="checkbox" data-k="ph1"><span>The three of you in the patriotic jerseys</span></label>
+      <label class="chk"><input type="checkbox" data-k="ph2"><span>Daikin Park + the skyline from the Michelob Ultra Club</span></label>
+      <label class="chk"><input type="checkbox" data-k="ph3"><span>Friday Night Fireworks</span></label>
+      <label class="chk"><input type="checkbox" data-k="ph4"><span>World Cup / Fan Fest signage + the big screen</span></label>
+      <label class="chk"><input type="checkbox" data-k="ph5"><span>The Saturn V rocket at Space Center</span></label>
+      <label class="chk"><input type="checkbox" data-k="ph6"><span>July 4th fireworks over Buffalo Bayou</span></label>
+      <label class="chk"><input type="checkbox" data-k="ph7"><span>A group photo with mom + aunt each day</span></label>
+      <label class="chk"><input type="checkbox" data-k="ph8"><span>Buc-ee's beaver (obligatory)</span></label>
+    </div>
+    <p class="save-note">Check state saves on this device.</p>
+  </div>
+</section>
+
+<!-- AI PICKS -->
+<section role="tabpanel" data-panel="ai" hidden>
+  <p class="eyebrow">Compare your assistants — use the AI filter up top</p>
+  <h2>AI Picks</h2>
+  <p class="muted" style="margin-bottom:6px">All three assistants are filled in (edit any box to update it). Use the <b>AI source</b> selector in the header to view one at a time or compare all three. Your edits save on this device. Note: on the ticket price, Gemini and ChatGPT were closer to reality than Claude's first read — the match is likely over your $700 budget.</p>
+
+  <div class="topic-h">Match-day call: the match, or the Fan Fest?</div>
+  <div class="ai-grid">
+    <div class="ai-panel" data-src="claude"><div class="ai-tag"><span class="dot"></span>Claude</div>
+      <p><b>Correction to my first take:</b> I was too optimistic. Match 90's real floor is ~$1,300+ now ($740–1,035 even back in May), so $700/person almost certainly won't get three of you in. Do the Fan Festival as the plan; keep a SeatGeek alert as a long shot only. Buy on FIFA official if it ever dips.</p></div>
+    <div class="ai-panel" data-src="gemini"><div class="ai-tag"><span class="dot"></span>Gemini</div>
+      <textarea data-k="ai_match_gemini">Re-run (correct on price): at $700/person, official FIFA resale knockout seats are out of reach — cheapest start well over $1,000. Recommends the free Fan Festival, watching from the screens under the cooling canopy or the AC Esphera dome. Flags an optional VIP Club 104 (~$95) for guaranteed indoor seating, private restrooms, and a break from the crowds — worth it for two older adults in the heat.</textarea></div>
+    <div class="ai-panel" data-src="chatgpt"><div class="ai-tag"><span class="dot"></span>ChatGPT</div>
+      <textarea data-k="ai_match_chatgpt">Buy official FIFA resale only IF it falls to $700 or less per person — a Round of 16 in Houston is hard to replicate. If prices stay above budget (they have), the EaDo Fan Festival is an excellent backup with giant screens, entertainment, food, and thousands of supporters — still an unforgettable World Cup experience.</textarea></div>
+  </div>
+
+  <div class="topic-h">Where to eat</div>
+  <div class="ai-grid">
+    <div class="ai-panel" data-src="claude"><div class="ai-tag"><span class="dot"></span>Claude</div>
+      <p>Lean into Houston's strengths: Viet-Cajun crawfish, Tex-Mex, Central-Texas BBQ — strong options near your hotel and the EaDo Fan Fest. Kept general on purpose; pull live picks via search when choosing, since hours shift.</p></div>
+    <div class="ai-panel" data-src="gemini"><div class="ai-tag"><span class="dot"></span>Gemini</div>
+      <textarea data-k="ai_eat_gemini">Re-run, sushi-forward near your hotel: Sapporo and Azuma (downtown sit-down, customizable rolls), Kokoro (inside Bravery Chef Hall — fast, simple nigiri/sashimi), Umiya (all-you-can-eat for flexibility), and Rodeo Goat in EaDo (customizable burgers, right by the Fan Festival) for a non-sushi break.</textarea></div>
+    <div class="ai-panel" data-src="chatgpt"><div class="ai-tag"><span class="dot"></span>ChatGPT</div>
+      <textarea data-k="ai_eat_chatgpt">Uchi (memorable sushi dinner), Oishii (reliable, approachable), Hando (casual hand rolls). Near EaDo/Fan Fest: Tiny Champions (one of Houston's best casual Italian). For classic Tex-Mex: The Original Ninfa's on Navigation — a Houston institution, short rideshare from downtown.</textarea></div>
+  </div>
+
+  <div class="topic-h">Logistics they flagged</div>
+  <div class="ai-grid">
+    <div class="ai-panel" data-src="claude"><div class="ai-tag"><span class="dot"></span>Claude</div>
+      <p>Jersey is one-size XL (souvenir, not wearable for all); FIFA-resale validity risk (buy official); July 4 road closures + rideshare surge; book refundable rates until tickets are in your FIFA wallet; pace the days for mom &amp; aunt in the heat.</p></div>
+    <div class="ai-panel" data-src="gemini"><div class="ai-tag"><span class="dot"></span>Gemini</div>
+      <textarea data-k="ai_logi_gemini">Re-run: download the METRO Q ticketing app in advance so you skip the credit-card kiosks at the hot outdoor platforms. Green/Purple lines drop at EaDo/Stadium near the Fan Fest, but the concrete heat is brutal — head straight to an air-conditioned pavilion on arrival. Both Daikin Park and the Fan Fest enforce clear-bag policies — pack stadium-approved bags before leaving Metairie.</textarea></div>
+    <div class="ai-panel" data-src="chatgpt"><div class="ai-tag"><span class="dot"></span>ChatGPT</div>
+      <textarea data-k="ai_logi_chatgpt">Houston's July heat index can top 100°F — walk outdoors early, carry insulated water bottles, hit AC stops often. The Red Line is easiest to NRG for your mom and aunt, but trains pack before/after the match — allow extra time and be ready to stand. Screenshot your hotel reservation, parking location, tickets, and rail maps in case service slows under crowds.</textarea></div>
+  </div>
+</section>
+
+<!-- FAQ -->
+<section role="tabpanel" data-panel="faq" hidden>
+  <p class="eyebrow">Quick answers</p>
+  <h2>FAQ &amp; "Did you think of…"</h2>
+  <details><summary>What am I not considering?</summary>
+    <p>The jersey is one-size XL (souvenir, not wearable for everyone); the FIFA-resale validity risk (buy official); July 4th road closures + rideshare surge after the match and that evening; three adjacent World Cup seats get scarce, so set alerts early; hotel parking is a daily paid cost; you arrive ~1 PM but check-in is ~3 PM (ask about bag storage / early check-in); the stadium is cashless with a clear-bag policy; and pace the days around the heat for your mom and aunt.</p></details>
+  <details><summary>Should I get travel insurance / refundable rates?</summary>
+    <p>Given ticket uncertainty, book hotel and add-ons at refundable rates where possible, and keep World Cup plans flexible until tickets are in your FIFA wallet. Not financial advice — just hedging variables you don't control.</p></details>
+  <details><summary>Is the match guaranteed to be at noon?</summary>
+    <p>Scheduled for 12:00 PM CT. FIFA notes kickoff times can shift; confirm on FIFA.com the week of. Teams finalize as the bracket resolves.</p></details>
+  <details><summary>Where exactly is the Michelob Ultra Club?</summary>
+    <p>Confirmed: Upper Deck, Right Field corner (300 level) — a 360° public bar with skyline views, up the staircase from the Silverado Mezzanine, next to Killen's BBQ. First Bud Friday there runs 5–7 PM.</p></details>
+  <details><summary>Can we do the match and the Fan Fest the same day?</summary>
+    <p>Tight but possible — different rail lines (Red for NRG, Green/Purple for EaDo), so allow a downtown transfer at Main Street Square (~30–40 min). Match ends ~2 PM; Fan Fest closes 6 PM on the 4th.</p></details>
+  <details><summary>About this app</summary>
+    <p>A working prototype of your idea: each assistant's recommendations side by side, filterable by source, with live weather and embedded maps. It runs as one web page — host it free (GitHub Pages) or drop it into a no-code builder (Glide/Softr) to wrap as an iOS app later.</p></details>
+</section>
+
+<footer>Built as a prototype · verify times &amp; prices the week of travel · ⚽ 🚀 🌭</footer>
+</div>
+
+<script>
+(function(){
+  // Persists on this device via localStorage (falls back to memory if unavailable)
+  var mem = {};
+  function save(k,v){ try{ localStorage.setItem('htm_'+k, JSON.stringify(v)); }catch(e){ mem[k]=v; } }
+  function load(k){ try{ var r=localStorage.getItem('htm_'+k); if(r!==null) return JSON.parse(r); return (k in mem)?mem[k]:null; }catch(e){ return (k in mem)?mem[k]:null; } }
+
+  var tabs = document.querySelectorAll('.tab');
+  var panels = document.querySelectorAll('section[role=tabpanel]');
+  function show(name){
+    tabs.forEach(function(t){ t.setAttribute('aria-selected', t.dataset.tab===name); });
+    panels.forEach(function(p){ p.hidden = (p.dataset.panel!==name); });
+    window.scrollTo({top:0,behavior:'smooth'});
+  }
+  tabs.forEach(function(t){ t.addEventListener('click',function(){ show(t.dataset.tab); }); });
+
+  var segBtns = document.querySelectorAll('.seg button');
+  segBtns.forEach(function(b){
+    b.addEventListener('click',function(){
+      segBtns.forEach(function(x){ x.setAttribute('aria-pressed','false'); });
+      b.setAttribute('aria-pressed','true');
+      document.body.dataset.filter = b.dataset.src;
+    });
+  });
+
+  // all saveable checkboxes (packing + ticket plan)
+  var boxes = document.querySelectorAll('input[type=checkbox][data-k]');
+  boxes.forEach(function(box){
+    box.addEventListener('change', async function(){ await save('ck_'+box.dataset.k, box.checked); });
+  });
+  // all saveable textareas
+  var areas = document.querySelectorAll('.ai-panel textarea');
+  areas.forEach(function(ta){
+    var t;
+    ta.addEventListener('input', function(){ clearTimeout(t); t=setTimeout(async function(){ await save('ta_'+ta.dataset.k, ta.value); }, 350); });
+  });
+  (async function(){
+    for (var i=0;i<boxes.length;i++){ var v = await load('ck_'+boxes[i].dataset.k); if(v) boxes[i].checked=true; }
+    for (var j=0;j<areas.length;j++){ var w = await load('ta_'+areas[j].dataset.k); if(w!==null && w!==undefined) areas[j].value=w; }
+  })();
+
+  // budget tracker
+  var budInputs = document.querySelectorAll('#budCard input[type=number]');
+  var budTotal = document.getElementById('budTotal');
+  function recompute(){
+    var sum=0;
+    budInputs.forEach(function(inp){ var n=parseFloat(inp.value); if(!isNaN(n)) sum+=n; });
+    if(budTotal) budTotal.textContent='$'+sum.toLocaleString();
+  }
+  budInputs.forEach(function(inp){
+    inp.addEventListener('input', async function(){ recompute(); await save('bud_'+inp.dataset.k, inp.value); });
+  });
+  (async function(){
+    for (var i=0;i<budInputs.length;i++){ var v = await load('bud_'+budInputs[i].dataset.k); if(v!==null && v!==undefined && v!=='') budInputs[i].value=v; }
+    recompute();
+  })();
+
+  // live weather (Open-Meteo, no key)
+  function icon(c){
+    if(c===0) return '☀️';
+    if(c<=2) return '🌤️';
+    if(c===3) return '☁️';
+    if(c>=45&&c<=48) return '🌫️';
+    if(c>=51&&c<=57) return '🌦️';
+    if(c>=61&&c<=67) return '🌧️';
+    if(c>=71&&c<=77) return '❄️';
+    if(c>=80&&c<=82) return '🌧️';
+    if(c>=95) return '⛈️';
+    return '🌡️';
+  }
+  var TRIP=['2026-07-03','2026-07-04','2026-07-05','2026-07-06'];
+  var DOW={0:'SUN',1:'MON',2:'TUE',3:'WED',4:'THU',5:'FRI',6:'SAT'};
+  fetch('https://api.open-meteo.com/v1/forecast?latitude=29.76&longitude=-95.37&daily=temperature_2m_max,temperature_2m_min,precipitation_probability_max,weather_code&temperature_unit=fahrenheit&timezone=America%2FChicago&forecast_days=16')
+    .then(function(r){ return r.json(); })
+    .then(function(d){
+      var wx=document.getElementById('wx'); var note=document.getElementById('wxNote');
+      var t=d.daily.time, hi=d.daily.temperature_2m_max, lo=d.daily.temperature_2m_min,
+          pp=d.daily.precipitation_probability_max, wc=d.daily.weather_code;
+      var html=''; var shown=0;
+      for(var i=0;i<t.length;i++){
+        if(TRIP.indexOf(t[i])>-1){
+          var dt=new Date(t[i]+'T12:00:00'); var lab=DOW[dt.getDay()]+' '+(dt.getMonth()+1)+'/'+dt.getDate();
+          html+='<div class="wx-day"><div class="d">'+lab+'</div><div class="ic">'+icon(wc[i])+'</div>'+
+                '<div class="hi">'+Math.round(hi[i])+'°</div><div class="lo">'+Math.round(lo[i])+'°</div>'+
+                '<div class="pp">'+(pp[i]!=null?pp[i]+'% rain':'')+'</div></div>';
+          shown++;
+        }
+      }
+      if(shown){ wx.innerHTML=html; note.textContent='Live forecast (Open-Meteo). Travel days populate as they enter range.'; }
+      else { wx.innerHTML='<p class="muted">Your travel days aren\u2019t in the forecast window yet (within ~16 days). Check back closer to July.</p>'; }
+    })
+    .catch(function(){
+      var wx=document.getElementById('wx');
+      wx.innerHTML='<p class="muted">Couldn\u2019t load live weather right now. Typical early-July Houston: mid-90s°F, humid, afternoon thunderstorm chances. Pull live the week of travel.</p>';
+    });
+})();
+</script>
+</body>
+</html>
